@@ -8,7 +8,7 @@ export default function Properties() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetch("http://localhost/RentHouseHub/api/get-properties.php")
+    fetch("https://renthousehub.rf.gd/api/get-properties.php")
       .then((response) => response.json())
       .then((data) => {
         console.log("Properties API:", data);
@@ -114,29 +114,29 @@ export default function Properties() {
               >
                 {/* IMAGE */}
                 {property.image ? (
-                  <img
-                    src={`http://localhost/RentHouseHub/${property.image}`}
-                    alt={property.title}
-                    style={{
-                      width: "100%",
-                      height: "210px",
-                      objectFit: "cover",
-                    }}
-                  />
-                ) : (
-                  <div
-                    style={{
-                      height: "210px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      background: "#eee",
-                      color: "#777",
-                    }}
-                  >
-                    No Image
-                  </div>
-                )}
+  <img
+    src={`https://renthousehub.rf.gd/${property.image}`}
+    alt={property.title}
+    style={{
+      width: "100%",
+      height: "210px",
+      objectFit: "cover",
+    }}
+  />
+) : (
+  <div
+    style={{
+      height: "210px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      background: "#eee",
+      color: "#777",
+    }}
+  >
+    No Image
+  </div>
+)}
 
                 {/* DETAILS */}
                 <div style={{ padding: "20px" }}>

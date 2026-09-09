@@ -1,18 +1,23 @@
 <?php
 
-$host = "localhost";
-$dbname = "houserent";
-$username = "root";
-$password = "";
+$host = "sql205.infinityfree.com";
+$port = 3306;
+$dbname = "if0_42871743_renthouse";
+$username = "if0_42871743";
+$password = "kHfOOaRcnWSL";
 
-try {
-    $conn = new PDO(
-        "mysql:host=$host;dbname=$dbname;charset=utf8mb4",
-        $username,
-        $password
-    );
+$conn = new mysqli(
+    $host,
+    $username,
+    $password,
+    $dbname,
+    $port
+);
 
-    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die("Database connection failed: " . $e->getMessage());
+if ($conn->connect_error) {
+    die("Database connection failed: " . $conn->connect_error);
 }
+
+$conn->set_charset("utf8mb4");
+
+?>
