@@ -20,7 +20,7 @@ function Login() {
       setLoading(true);
 
       const response = await fetch(
-        "http://localhost/RentHouseHub/api/login.php",
+  "https://renthousehub.rf.gd/api/login.php",
         {
           method: "POST",
           headers: {
