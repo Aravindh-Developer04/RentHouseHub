@@ -1,22 +1,22 @@
-<?php               
-header("Access-Control-Allow-Origin: http://localhost:5173");
+<?php
+
+header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: Content-Type");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Content-Type: application/json");
 
-require_once __DIR__ . "/../config/database.php";
-
 if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
+    http_response_code(200);
     exit;
 }
+
+require_once __DIR__ . "/../config/database.php";
 
 $data = json_decode(file_get_contents("php://input"), true);
 
 $email = trim($data["email"] ?? "");
 $password = $data["password"] ?? "";
 
-
-// Check empty fields
 if ($email === "" || $password === "") {
     echo json_encode([
         "success" => false,
@@ -25,8 +25,6 @@ if ($email === "" || $password === "") {
     exit;
 }
 
-
-// Check email format
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     echo json_encode([
         "success" => false,
@@ -35,22 +33,20 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     exit;
 }
 
-
 try {
 
-    // Get user from database
     $stmt = $conn->prepare(
         "SELECT id, name, email, password, role
          FROM users
          WHERE email = ?"
     );
 
-    $stmt->execute([$email]);
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
 
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    $result = $stmt->get_result();
+    $user = $result->fetch_assoc();
 
-
-    // User not found
     if (!$user) {
         echo json_encode([
             "success" => false,
@@ -59,8 +55,6 @@ try {
         exit;
     }
 
-
-    // Check password
     if (!password_verify($password, $user["password"])) {
         echo json_encode([
             "success" => false,
@@ -69,12 +63,8 @@ try {
         exit;
     }
 
-
-    // Remove password before sending to React
     unset($user["password"]);
 
-
-    // Successful login
     echo json_encode([
         "success" => true,
         "message" => "Login successful",
@@ -86,7 +76,9 @@ try {
         ]
     ]);
 
-} catch (PDOException $e) {
+    $stmt->close();
+
+} catch (Exception $e) {
 
     echo json_encode([
         "success" => false,

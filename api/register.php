@@ -1,15 +1,16 @@
 <?php
 
-header("Access-Control-Allow-Origin: http://localhost:5173");
+header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: Content-Type");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Content-Type: application/json");
 
-require_once __DIR__ . "/../config/database.php";
-
 if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
+    http_response_code(200);
     exit;
 }
+
+require_once __DIR__ . "/../config/database.php";
 
 $data = json_decode(file_get_contents("php://input"), true);
 
@@ -42,17 +43,19 @@ if (strlen($password) < 6) {
     exit;
 }
 
-
-
 try {
 
+    // Check if email already exists
     $check = $conn->prepare(
         "SELECT id FROM users WHERE email = ?"
     );
 
-    $check->execute([$email]);
+    $check->bind_param("s", $email);
+    $check->execute();
 
-    if ($check->fetch()) {
+    $result = $check->get_result();
+
+    if ($result->num_rows > 0) {
         echo json_encode([
             "success" => false,
             "message" => "Email already registered"
@@ -60,32 +63,47 @@ try {
         exit;
     }
 
+    // Hash password
     $hashedPassword = password_hash(
         $password,
         PASSWORD_DEFAULT
     );
 
+    // Insert user
     $stmt = $conn->prepare(
         "INSERT INTO users (name, email, password, role)
          VALUES (?, ?, ?, ?)"
     );
 
-    $stmt->execute([
+    $stmt->bind_param(
+        "ssss",
         $name,
         $email,
         $hashedPassword,
         $role
-    ]);
+    );
 
-    echo json_encode([
-        "success" => true,
-        "message" => "Account created successfully"
-    ]);
+    if ($stmt->execute()) {
+        echo json_encode([
+            "success" => true,
+            "message" => "Account created successfully"
+        ]);
+    } else {
+        echo json_encode([
+            "success" => false,
+            "message" => "Registration failed"
+        ]);
+    }
 
-} catch (PDOException $e) {
+    $stmt->close();
+    $check->close();
+
+} catch (Exception $e) {
 
     echo json_encode([
         "success" => false,
         "message" => "Registration failed"
     ]);
 }
+
+?>
