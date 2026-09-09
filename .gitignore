@@ -1,0 +1,25 @@
+# React
+client/node_modules/
+client/dist/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# PHP dependencies
+vendor/
+
+# Uploaded files
+upload/*
+uploads/*
+
+# Logs
+*.log
+
+# VS Code
+.vscode/
+
+# OS
+Thumbs.db
+.DS_Store
