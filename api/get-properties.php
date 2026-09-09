@@ -1,20 +1,37 @@
 <?php
 
-header("Access-Control-Allow-Origin: http://localhost:5173");
-header("Access-Control-Allow-Headers: Content-Type");
+$origin = $_SERVER["HTTP_ORIGIN"] ?? "";
+
+$allowedOrigins = [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:5174",
+    "https://renthousehub.rf.gd",
+    "https://rent-house-hub-git-main-aravindh-developer5.vercel.app"
+];
+
+if ($origin !== "" && in_array($origin, $allowedOrigins, true)) {
+    header("Access-Control-Allow-Origin: " . $origin);
+} else {
+    header("Access-Control-Allow-Origin: *");
+}
+
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Access-Control-Allow-Methods: GET, OPTIONS");
 header("Content-Type: application/json");
 
-require_once __DIR__ . "/../config/database.php";
-
 if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
+    http_response_code(200);
     exit;
 }
 
+require_once __DIR__ . "/../config/database.php";
+
 try {
 
-    $stmt = $conn->query(
-        "SELECT
+    $sql = "
+        SELECT
             p.id,
             p.owner_id,
             p.title,
@@ -34,20 +51,35 @@ try {
                 LIMIT 1
             ) AS image
         FROM properties p
-        ORDER BY p.id DESC"
-    );
+        ORDER BY p.id DESC
+    ";
 
-    $properties = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $result = $conn->query($sql);
+
+    if (!$result) {
+        throw new Exception($conn->error);
+    }
+
+    $properties = [];
+
+    while ($row = $result->fetch_assoc()) {
+        $properties[] = $row;
+    }
 
     echo json_encode([
         "success" => true,
         "properties" => $properties
     ]);
 
-} catch (PDOException $e) {
+} catch (Exception $e) {
+
+    http_response_code(500);
 
     echo json_encode([
         "success" => false,
-        "message" => "Failed to fetch properties: " . $e->getMessage()
+        "message" => "Failed to fetch properties",
+        "error" => $e->getMessage()
     ]);
 }
+
+?>
