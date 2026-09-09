@@ -46,8 +46,8 @@ function Register() {
       setLoading(true);
 
       // Send data to PHP API
-      const response = await fetch(
-        "https://renthousehub.rf.gd/api/register.php",
+const response = await fetch(
+  "https://renthousehub.rf.gd/api/register.php",
         {
           method: "POST",
           headers: {

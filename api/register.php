@@ -1,7 +1,22 @@
 <?php
 
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Headers: Content-Type");
+$origin = $_SERVER["HTTP_ORIGIN"] ?? "";
+
+$allowedOrigins = [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:5174",
+    "https://renthousehub.rf.gd"
+];
+
+if ($origin !== "" && in_array($origin, $allowedOrigins, true)) {
+    header("Access-Control-Allow-Origin: " . $origin);
+} else {
+    header("Access-Control-Allow-Origin: *");
+}
+
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Content-Type: application/json");
 
@@ -16,13 +31,13 @@ $data = json_decode(file_get_contents("php://input"), true);
 
 $name = trim($data["name"] ?? "");
 $email = trim($data["email"] ?? "");
+$phone = trim($data["phone"] ?? "");
 $password = $data["password"] ?? "";
-$role = "owner";
 
 if ($name === "" || $email === "" || $password === "") {
     echo json_encode([
         "success" => false,
-        "message" => "All fields are required"
+        "message" => "All required fields are required"
     ]);
     exit;
 }
@@ -45,7 +60,7 @@ if (strlen($password) < 6) {
 
 try {
 
-    // Check if email already exists
+    // Check existing email
     $check = $conn->prepare(
         "SELECT id FROM users WHERE email = ?"
     );
@@ -69,6 +84,8 @@ try {
         PASSWORD_DEFAULT
     );
 
+    $role = "owner";
+
     // Insert user
     $stmt = $conn->prepare(
         "INSERT INTO users (name, email, password, role)
@@ -84,11 +101,14 @@ try {
     );
 
     if ($stmt->execute()) {
+
         echo json_encode([
             "success" => true,
             "message" => "Account created successfully"
         ]);
+
     } else {
+
         echo json_encode([
             "success" => false,
             "message" => "Registration failed"
@@ -102,7 +122,7 @@ try {
 
     echo json_encode([
         "success" => false,
-        "message" => "Registration failed"
+        "message" => "Registration failed: " . $e->getMessage()
     ]);
 }
 

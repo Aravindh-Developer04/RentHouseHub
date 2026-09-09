@@ -1,7 +1,22 @@
 <?php
 
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Headers: Content-Type");
+$origin = $_SERVER["HTTP_ORIGIN"] ?? "";
+
+$allowedOrigins = [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:5174",
+    "https://renthousehub.rf.gd"
+];
+
+if ($origin !== "" && in_array($origin, $allowedOrigins, true)) {
+    header("Access-Control-Allow-Origin: " . $origin);
+} else {
+    header("Access-Control-Allow-Origin: *");
+}
+
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Content-Type: application/json");
 
@@ -85,4 +100,5 @@ try {
         "message" => "Login failed: " . $e->getMessage()
     ]);
 }
+
 ?>
